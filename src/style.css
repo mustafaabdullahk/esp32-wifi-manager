@@ -118,6 +118,9 @@ h3 {
 #connect_manual {
     display: none;
 }
+#token_block {
+    display: none;
+}
 #manual_ssid {
     border: none;
     width: 80%;
@@ -126,6 +129,13 @@ h3 {
     display: block
 }
 #manual_pwd {
+    border: none;
+    width: 80%;
+    margin-left: 35px;
+    padding: 10px 0px 10px 10px;
+    display: block
+}
+#token_input {
     border: none;
     width: 80%;
     margin-left: 35px;
@@ -146,6 +156,9 @@ h3 {
     float: right;
 }
 #manual_join {
+    float: right;
+}
+#token_save {
     float: right;
 }
 #yes-disconnect {

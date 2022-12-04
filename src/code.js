@@ -6,6 +6,7 @@ const connect_div = gel("connect");
 const connect_manual_div = gel("connect_manual");
 const connect_wait_div = gel("connect-wait");
 const connect_details_div = gel("connect-details");
+const token_div = gel("token_block");
 
 function docReady(fn) {
   // see if DOM is already available
@@ -23,6 +24,7 @@ function docReady(fn) {
 var selectedSSID = "";
 var refreshAPInterval = null;
 var checkStatusInterval = null;
+var token = "token";
 
 function stopCheckStatusInterval() {
   if (checkStatusInterval != null) {
@@ -56,6 +58,24 @@ docReady(async function () {
     false
   );
 
+  gel("token_add").addEventListener(
+    "click",
+    (e) => {
+      token = e.target.innerText;
+      gel("token_input").style.display = "block";
+      gel("token_input").textContent = token;
+
+      wifi_div.style.display = "none";
+      token_div.style.display = "block";
+      connect_div.style.display = "none";
+      connect_manual_div.style.display = "none";
+
+      // gel("connect-success").display = "none";
+      // gel("connect-fail").display = "none";
+    },
+    false
+  );
+
   gel("manual_add").addEventListener(
     "click",
     (e) => {
@@ -65,6 +85,7 @@ docReady(async function () {
       wifi_div.style.display = "none";
       connect_manual_div.style.display = "block";
       connect_div.style.display = "none";
+      token_div.style.display = "none";
 
       gel("connect-success").display = "none";
       gel("connect-fail").display = "none";
@@ -88,6 +109,7 @@ docReady(async function () {
     selectedSSID = "";
     connect_div.style.display = "none";
     connect_manual_div.style.display = "none";
+    token_div.style.display = "none";
     wifi_div.style.display = "block";
   }
 
@@ -96,6 +118,15 @@ docReady(async function () {
   gel("manual_cancel").addEventListener("click", cancel, false);
 
   gel("join").addEventListener("click", performConnect, false);
+
+  gel("token_save").addEventListener(
+    "click",
+    (e) => {
+      token = gel("token_input").value;
+      console.log(token);
+    },
+    false
+  );
 
   gel("manual_join").addEventListener(
     "click",
@@ -119,16 +150,6 @@ docReady(async function () {
     () => {
       gel("credits").style.display = "none";
       gel("app").style.display = "block";
-    },
-    false
-  );
-
-  gel("acredits").addEventListener(
-    "click",
-    () => {
-      event.preventDefault();
-      gel("app").style.display = "none";
-      gel("credits").style.display = "block";
     },
     false
   );
@@ -213,6 +234,7 @@ async function performConnect(conntype) {
   gel("ssid-wait").textContent = selectedSSID;
   connect_div.style.display = "none";
   connect_manual_div.style.display = "none";
+  token_div.style.display = "none";
   connect_wait_div.style.display = "block";
 
   await fetch("connect.json", {
@@ -221,6 +243,7 @@ async function performConnect(conntype) {
       "Content-Type": "application/json",
       "X-Custom-ssid": selectedSSID,
       "X-Custom-pwd": pwd,
+      "X-Custom-token": token,
     },
     body: { timestamp: Date.now() },
   });

@@ -21,6 +21,10 @@
 							<div class="ape"><div class="w0"><div class="pw"><span></span></div></div></div>
 						</section>
 					</div>
+					<h2>Token</h2>
+					<section id="token_add">
+					<div class="ape">ADD TOKEN<div>
+					</section>
 					<h2>Manual connect</h2>
 					<section id="manual_add">
 					<div class="ape">ADD (HIDDEN) SSID<div>
@@ -28,7 +32,19 @@
 					<h2>or choose a network...</h2>
 					<section id="wifi-list">
 					</section>
-					<div id="pwrdby"><em>Powered by </em><a id="acredits" href="#"><strong>esp32-wifi-manager</strong></a>.</div>
+				</div>
+				<div id="token_block">
+					<header>
+						<h1>Enter your gsm number</h1>
+					</header>
+					<h2>Token registration</span></h2>
+					<section>
+						<input id="token_input" type="text" placeholder="GSM" value="">
+					</section>
+					<div class="buttons">
+						<input id="token_save" type="button" value="Save" data-connect="manual" />
+						<input id="manual_cancel" type="button" value="Cancel" />
+					</div>
 				</div>
 				<div id="connect_manual">
 					<header>
