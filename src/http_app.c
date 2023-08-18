@@ -42,6 +42,7 @@ function to process requests, decode URLs, serve files, etc. etc.
 #include <esp_system.h>
 #include "esp_netif.h"
 #include <esp_http_server.h>
+#include "esp_http_client.h"
 
 #include "wifi_manager.h"
 #include "http_app.h"
@@ -137,6 +138,30 @@ static esp_err_t http_server_delete_handler(httpd_req_t *req){
 	return ESP_OK;
 }
 
+static void device_registration(char* token)
+{
+	esp_http_client_config_t config = {
+		.host = "http://",
+		.path = "/",
+		.transport_type = HTTP_TRANSPORT_OVER_TCP,
+		.event_handler = 0,
+	};
+	esp_http_client_handle_t client = esp_http_client_init(&config);
+
+	const char *post_data = "?";
+	esp_http_client_set_post_field(client, post_data, strlen(post_data));
+
+	// GET
+	esp_err_t err = esp_http_client_perform(client);
+	if (err == ESP_OK) {
+		ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
+				 esp_http_client_get_status_code(client),
+				 esp_http_client_get_content_length(client));
+	}
+	else {
+		ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+	}
+}
 
 static esp_err_t http_server_post_handler(httpd_req_t *req){
 
@@ -150,12 +175,13 @@ static esp_err_t http_server_post_handler(httpd_req_t *req){
 
 
 		/* buffers for the headers */
-		size_t ssid_len = 0, password_len = 0;
-		char *ssid = NULL, *password = NULL;
+		size_t ssid_len = 0, password_len = 0, token_len;
+		char *ssid = NULL, *password = NULL, *token = NULL;
 
 		/* len of values provided */
 		ssid_len = httpd_req_get_hdr_value_len(req, "X-Custom-ssid");
 		password_len = httpd_req_get_hdr_value_len(req, "X-Custom-pwd");
+		token_len = httpd_req_get_hdr_value_len(req, "X-Custom-token");
 
 
 		if(ssid_len && ssid_len <= MAX_SSID_SIZE && password_len && password_len <= MAX_PASSWORD_SIZE){
@@ -163,8 +189,10 @@ static esp_err_t http_server_post_handler(httpd_req_t *req){
 			/* get the actual value of the headers */
 			ssid = malloc(sizeof(char) * (ssid_len + 1));
 			password = malloc(sizeof(char) * (password_len + 1));
+			token = malloc(sizeof(char) * (token_len + 1));
 			httpd_req_get_hdr_value_str(req, "X-Custom-ssid", ssid, ssid_len+1);
 			httpd_req_get_hdr_value_str(req, "X-Custom-pwd", password, password_len+1);
+			httpd_req_get_hdr_value_str(req, "X-Custom-token", token, token_len+1);
 
 			wifi_config_t* config = wifi_manager_get_wifi_sta_config();
 			memset(config, 0x00, sizeof(wifi_config_t));
@@ -174,9 +202,12 @@ static esp_err_t http_server_post_handler(httpd_req_t *req){
 			ESP_LOGD(TAG, "http_server_post_handler: wifi_manager_connect_async() call");
 			wifi_manager_connect_async();
 
+			device_registration(token);
+
 			/* free memory */
 			free(ssid);
 			free(password);
+			free(token);
 
 			httpd_resp_set_status(req, http_200_hdr);
 			httpd_resp_set_type(req, http_content_type_json);
